@@ -21,6 +21,14 @@ class Users(models.Model):
     birth_date = models.DateField()
     created_at = models.DateTimeField(blank=True, null=True)
 
+    @property
+    def is_authenticated(self) -> bool:
+        return True
+
+    @property
+    def is_anonymous(self) -> bool:
+        return False
+
     class Meta:
         db_table = 'Users'
         managed = False
