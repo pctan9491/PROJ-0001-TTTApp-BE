@@ -8,7 +8,7 @@ class Authentication(models.Model):
     auth_path = models.CharField(max_length=30)
 
     class Meta:
-        db_table = 'Authentication'
+        db_table = 'authentication'
         managed = False
 
 
@@ -30,7 +30,7 @@ class Users(models.Model):
         return False
 
     class Meta:
-        db_table = 'Users'
+        db_table = 'users'
         managed = False
 
 
@@ -59,5 +59,5 @@ class LoginCredential(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        db_table = 'Login_Credential'
+        db_table = 'login_credential'
         managed = False
