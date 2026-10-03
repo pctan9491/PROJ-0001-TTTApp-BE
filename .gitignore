@@ -1,7 +1,21 @@
 .venv/
-.env
 __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
+
+# Environment files — NEVER commit real secrets.
+# Only the *.example templates are tracked.
+.env
+.env.dev
+.env.test
+.env.prod
+.env.local
+.env.*.local
+
+# Ignore example override files that users might accidentally rename
+!.env.example
+!.env.dev.example
+!.env.test.example
+!.env.prod.example
 

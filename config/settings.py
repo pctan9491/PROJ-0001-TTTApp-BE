@@ -18,19 +18,48 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(BASE_DIR / '.env')
+# DJANGO_ENV: 'dev' | 'test' | 'prod' — controls which DB name default is used
+# and which .env.<env> file gets loaded on top of the base .env
+DJANGO_ENV = os.environ.get('DJANGO_ENV', 'dev')
+if DJANGO_ENV not in ('dev', 'test', 'prod'):
+    raise RuntimeError("DJANGO_ENV must be one of: 'dev', 'test', 'prod'")
+
+# Load base env first, then environment-specific override (if present)
+load_dotenv(BASE_DIR / '.env', override=False)
+_env_file = BASE_DIR / f'.env.{DJANGO_ENV}'
+if _env_file.exists():
+    load_dotenv(_env_file, override=True)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-dev-secret-key')
+# Require explicit SECRET_KEY in test/prod to avoid accidental insecure defaults
+if DJANGO_ENV == 'dev':
+    SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-dev-secret-key-change-in-prod')
+else:
+    SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+    if not SECRET_KEY:
+        raise RuntimeError(f'DJANGO_SECRET_KEY is required when DJANGO_ENV={DJANGO_ENV}')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
+# Default: dev=True, test=False, prod=False
+_debug_default = 'True' if DJANGO_ENV == 'dev' else 'False'
+DEBUG = os.environ.get('DJANGO_DEBUG', _debug_default).lower() == 'true'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# ALLOWED_HOSTS: comma-separated list from env, or localhost defaults for dev
+_allowed_hosts_env = os.environ.get('DJANGO_ALLOWED_HOSTS')
+if _allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(',') if h.strip()]
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if DJANGO_ENV == 'dev' else []
+
+if not ALLOWED_HOSTS:
+    raise RuntimeError(
+        f'DJANGO_ALLOWED_HOSTS env var is required when DJANGO_ENV={DJANGO_ENV}. '
+        'Example: "yourdomain.com,www.yourdomain.com"'
+    )
 
 
 # Application definition
@@ -79,14 +108,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DB_NAME = os.environ.get('DB_NAME')
+# Default DB names follow convention: tttapp_dev | tttapp_test | tttapp_prod
+# Override by setting DB_NAME explicitly in your .env or .env.<env>
+_DB_NAME_DEFAULT = f'tttapp_{DJANGO_ENV}'
+
+DB_NAME = os.environ.get('DB_NAME', _DB_NAME_DEFAULT)
 DB_USER = os.environ.get('DB_USER')
 DB_PASSWORD = os.environ.get('DB_PASSWORD')
 DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
 DB_PORT = os.environ.get('DB_PORT', '5432')
 
-if not DB_NAME or not DB_USER or not DB_PASSWORD:
-    raise RuntimeError('Missing DB env vars. Copy .env.example to .env and fill DB_NAME/DB_USER/DB_PASSWORD.')
+if not DB_USER or not DB_PASSWORD:
+    raise RuntimeError(
+        'Missing DB credentials. Set DB_USER and DB_PASSWORD in your .env file. '
+        f'DB_NAME will default to "{_DB_NAME_DEFAULT}" based on DJANGO_ENV={DJANGO_ENV} '
+        'unless you override it explicitly.'
+    )
 
 DATABASES = {
     'default': {
