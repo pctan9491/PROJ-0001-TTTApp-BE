@@ -23,8 +23,18 @@ def _user_payload(user):
     }
 
 
-def _credential_payload(credential: LoginCredential):
-    return LoginCredentialSerializer(credential).data
+def _credential_payload(credential):
+    return {
+        'id': str(credential.id),
+        'user_ulid': str(credential.user_ulid.id),
+        'user_id': credential.user_id,
+        'username': credential.username,
+        'email': credential.email,
+        'enable_flag': credential.enable_flag,
+        'biometric_info': credential.biometric_info,
+        'auth_ulid': str(credential.auth_ulid.id),
+        'created_at': credential.created_at.isoformat(),
+    }
 
 
 class RegisterView(APIView):
