@@ -13,6 +13,7 @@ PASSWORD_AUTH_PATH = '/oauth/password/callback'
 @dataclass(frozen=True)
 class AuthResult:
     user: Users
+    credential: LoginCredential
 
 
 class RegistrationError(Exception):
@@ -56,7 +57,7 @@ def register_user(
                 created_at=timezone.now(),
             )
 
-            LoginCredential.objects.create(
+            credential = LoginCredential.objects.create(
                 user_ulid=user,
                 user_id=user.user_id,
                 username=username,
@@ -67,21 +68,21 @@ def register_user(
                 created_at=timezone.now(),
             )
 
-            return AuthResult(user=user)
+            return AuthResult(user=user, credential=credential)
     except IntegrityError as exc:
         raise RegistrationError('User creation failed due to duplicate data') from exc
 
 
 def login_user(*, login: str, password: str) -> AuthResult:
     cred = (
-        LoginCredential.objects.select_related('user_ulid')
+        LoginCredential.objects.select_related('user_ulid', 'auth_ulid')
         .filter(enable_flag=True)
         .filter(username=login)
         .first()
     )
     if cred is None:
         cred = (
-            LoginCredential.objects.select_related('user_ulid')
+            LoginCredential.objects.select_related('user_ulid', 'auth_ulid')
             .filter(enable_flag=True)
             .filter(email=login)
             .first()
@@ -93,5 +94,5 @@ def login_user(*, login: str, password: str) -> AuthResult:
     if not check_password(password, cred.password_hash):
         raise LoginError('Invalid credentials')
 
-    return AuthResult(user=cred.user_ulid)
+    return AuthResult(user=cred.user_ulid, credential=cred)
 

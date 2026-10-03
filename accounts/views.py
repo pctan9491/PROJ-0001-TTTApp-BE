@@ -3,7 +3,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.authentication import issue_token
-from accounts.serializers import LoginSerializer, RegisterSerializer
+from accounts.models import LoginCredential
+from accounts.serializers import (
+    LoginCredentialSerializer,
+    LoginSerializer,
+    RegisterSerializer,
+)
 from accounts.services import LoginError, RegistrationError, login_user, register_user
 
 
@@ -16,6 +21,10 @@ def _user_payload(user):
         'gender': user.gender,
         'birth_date': user.birth_date.isoformat(),
     }
+
+
+def _credential_payload(credential: LoginCredential):
+    return LoginCredentialSerializer(credential).data
 
 
 class RegisterView(APIView):
@@ -32,7 +41,11 @@ class RegisterView(APIView):
 
         token = issue_token(user=result.user)
         return Response(
-            {'access_token': token, 'user': _user_payload(result.user)},
+            {
+                'access_token': token,
+                'user': _user_payload(result.user),
+                'login_credential': _credential_payload(result.credential),
+            },
             status=status.HTTP_201_CREATED,
         )
 
@@ -50,7 +63,13 @@ class LoginView(APIView):
             return Response({'detail': str(exc)}, status=status.HTTP_401_UNAUTHORIZED)
 
         token = issue_token(user=result.user)
-        return Response({'access_token': token, 'user': _user_payload(result.user)})
+        return Response(
+            {
+                'access_token': token,
+                'user': _user_payload(result.user),
+                'login_credential': _credential_payload(result.credential),
+            }
+        )
 
 
 class MeView(APIView):
@@ -58,4 +77,13 @@ class MeView(APIView):
 
     def get(self, request):
         user = request.user
-        return Response({'user': _user_payload(user)})
+        credential = (
+            LoginCredential.objects.select_related('auth_ulid')
+            .filter(user_ulid=user, enable_flag=True)
+            .order_by('-created_at')
+            .first()
+        )
+        payload = {'user': _user_payload(user)}
+        if credential is not None:
+            payload['login_credential'] = _credential_payload(credential)
+        return Response(payload)
