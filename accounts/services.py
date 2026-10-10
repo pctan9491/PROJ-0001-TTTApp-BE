@@ -73,7 +73,11 @@ def register_user(
         raise RegistrationError('User creation failed due to duplicate data') from exc
 
 
-def login_user(*, login: str, password: str) -> AuthResult:
+def login_user(
+    *, 
+    login: str, 
+    password: str
+    ) -> AuthResult:
     cred = (
         LoginCredential.objects.select_related('user_ulid', 'auth_ulid')
         .filter(enable_flag=True)

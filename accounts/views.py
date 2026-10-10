@@ -78,7 +78,8 @@ class LoginView(APIView):
                 'access_token': token,
                 'user': _user_payload(result.user),
                 'login_credential': _credential_payload(result.credential),
-            }
+            },
+            status=status.HTTP_200_OK,
         )
 
 
