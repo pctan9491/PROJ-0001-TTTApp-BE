@@ -12,5 +12,5 @@ class SignedTokenAuthenticationScheme(OpenApiAuthenticationExtension):
             'type': 'http',
             'scheme': 'bearer',
             'bearerFormat': 'SignedToken',
-            'description': 'Enter the access_token returned by Login API',
+            'description': 'Enter the access_token returned by Login API (without Bearer prefix)',
         }
