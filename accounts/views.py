@@ -1,6 +1,9 @@
+from django.shortcuts import render
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
 
 from accounts.authentication import issue_token
 from accounts.models import LoginCredential
@@ -40,6 +43,13 @@ def _credential_payload(credential):
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(
+        tags=['Accounts'],
+        summary='Register User',
+        request=RegisterSerializer,
+        responses={201: OpenApiTypes.OBJECT},
+        auth=[],
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -63,6 +73,14 @@ class RegisterView(APIView):
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(
+        tags=['Accounts'],
+        summary='Login User',
+        description='Login using username/email and password',
+        request=LoginSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        auth=[],
+    )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -85,6 +103,12 @@ class LoginView(APIView):
 class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @extend_schema(
+        tags=['Accounts'],
+        summary='Get Current User',
+        description='Retrieve authenticated user profile',
+        responses={200: OpenApiTypes.OBJECT},
+    )
     def get(self, request):
         user = request.user
         credential = (
