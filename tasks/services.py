@@ -7,6 +7,8 @@ from datetime import datetime
 class TaskCreationError(Exception):
     pass
 
+class TaskNotFoundError(Exception):
+    pass
 
 def create_task(
     *,
@@ -44,23 +46,27 @@ def get_task (
     user: Users,
     filters: dict,
 ):
-    with transaction.atomic():
-        #1 Get all tasks from login user
-        tasks = Task.objects.filter(user_ulid=user.user_ulid, **filters)
+    try:
+        with transaction.atomic():
+            #1 Get all tasks from login user
+            tasks = Task.objects.filter(user_ulid=user.user_ulid, **filters)
 
-        #2 Filter by any field
-        if filters.get("task_id"):
-            tasks = tasks.filter(task_id=filters["task_id"])
-        if filters.get("task_title"):
-            tasks = tasks.filter(task_title__contains=filters["task_title"])
-        if filters.get("task_status"):
-            tasks = tasks.filter(task_status=filters["task_status"])
-        if filters.get("priority_level"):
-            tasks = tasks.filter(priority_level=filters["priority_level"])
-        if filters.get("schedule"):
-            tasks = tasks.filter(schedule=filters["schedule"])
-        if filters.get("eisenhower_matrix_uuid"):
-            tasks = tasks.filter(eisenhower_matrix_uuid=filters["eisenhower_matrix_uuid"])
+            #2 Filter by any field
+            if filters.get("task_id"):
+                tasks = tasks.filter(task_id=filters["task_id"])
+            if filters.get("task_title"):
+                tasks = tasks.filter(task_title__contains=filters["task_title"])
+            if filters.get("task_status"):
+                tasks = tasks.filter(task_status=filters["task_status"])
+            if filters.get("priority_level"):
+                tasks = tasks.filter(priority_level=filters["priority_level"])
+            if filters.get("schedule"):
+                tasks = tasks.filter(schedule=filters["schedule"])
+            if filters.get("eisenhower_matrix_uuid"):
+                tasks = tasks.filter(eisenhower_matrix_uuid=filters["eisenhower_matrix_uuid"])
 
-        #3 Return tasks sorted by created_at with filtered condition(s) (if any)
-        return tasks.order_by('created_at')
+            #3 Return tasks sorted by created_at with filtered condition(s) (if any)
+            return tasks.order_by('created_at')
+    except Task.DoesNotExist:
+        raise TaskNotFoundError('Task not found')
+    

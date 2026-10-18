@@ -17,7 +17,7 @@ from accounts.services import LoginError, RegistrationError, login_user, registe
 
 def _user_payload(user):
     return {
-        'id': str(user.id),
+        'user_ulid': str(user.id),
         'user_id': user.user_id,
         'first_name': user.first_name,
         'last_name': user.last_name,

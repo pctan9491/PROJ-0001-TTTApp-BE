@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import IntegrityError, transaction
-from django.utils import timezone
+from datetime import datetime
 
 from accounts.models import Authentication, LoginCredential, Users
 
@@ -54,7 +54,7 @@ def register_user(
                 last_name=last_name,
                 gender=gender,
                 birth_date=birth_date,
-                created_at=timezone.now(),
+                created_at=datetime.now(),
             )
 
             credential = LoginCredential.objects.create(
@@ -65,7 +65,7 @@ def register_user(
                 password_hash=make_password(password),
                 auth_ulid=auth,
                 enable_flag=True,
-                created_at=timezone.now(),
+                created_at=datetime.now(),
             )
 
             return AuthResult(user=user, credential=credential)
