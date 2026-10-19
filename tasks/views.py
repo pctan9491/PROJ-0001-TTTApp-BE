@@ -42,7 +42,6 @@ class CreateTaskView(APIView):
         summary='Create a new task',
         request=CreateTaskSerializer,
         responses={201: OpenApiTypes.OBJECT},
-        auth=[],
     )
     def post (self, request):
         #Serializer
@@ -50,7 +49,7 @@ class CreateTaskView(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            task = create_task(**serializer.validated_data)
+            task = create_task(user=request.user, **serializer.validated_data)
         except TaskCreationError as exc:
             return Response({'detail':str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(

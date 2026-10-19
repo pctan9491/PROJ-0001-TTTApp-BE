@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from django.db import IntegrityError, transaction
-from tasks.models import Task, SubTask
+from tasks.models import Task, SubTask, EisenhowerMatrix
 from accounts.models import Users
 from django.utils import timezone
 
@@ -12,16 +12,16 @@ class TaskNotFoundError(Exception):
 
 def create_task(
     *,
+    user: Users,
     task_id: str,
     task_title: str,
     task_detail: str,
     task_status: str,
     priority_level: str,
     schedule,
-    user_ulid: str,
-    user_id: str,
-    eisenhower_matrix_uuid: str,
+    eisenhower_matrix_id: str,
 ) -> Task:
+
     try:
         with transaction.atomic():
             task = Task.objects.create(
@@ -31,9 +31,9 @@ def create_task(
                 task_status=task_status,
                 priority_level=priority_level,
                 schedule=schedule,
-                user_ulid=user_ulid,
-                user_id=user_id,
-                eisenhower_matrix_uuid=eisenhower_matrix_uuid,
+                user_ulid=user.id,
+                user_id=user.user_id,
+                eisenhower_matrix_uuid=EisenhowerMatrix.objects.get( eisenhower_matrix_id=eisenhower_matrix_id),
                 created_at=timezone.now(),
             )
 

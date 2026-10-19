@@ -1,5 +1,6 @@
 from django.db import models
 from tasks.uuidv7 import uuidv7
+from accounts.models import Users
 
 
 class EisenhowerMatrix(models.Model):

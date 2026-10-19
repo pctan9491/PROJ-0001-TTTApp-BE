@@ -25,7 +25,7 @@ from drf_spectacular.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
-    #path('api/tasks/', include('tasks.urls')),
+    path('api/tasks/', include('tasks.urls')),
 
     # OpenAPI Schema
     path(
