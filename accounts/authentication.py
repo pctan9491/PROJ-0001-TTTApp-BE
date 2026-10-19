@@ -18,10 +18,10 @@ def issue_token(*, user: Users) -> str:
 def verify_token(*, token: str) -> Users:
     try:
         payload = signing.loads(token, salt=TOKEN_SALT, max_age=TOKEN_MAX_AGE_SECONDS)
-    except signing.BadSignature as exc:
-        raise exceptions.AuthenticationFailed('Invalid token') from exc
     except signing.SignatureExpired as exc:
         raise exceptions.AuthenticationFailed('Token expired') from exc
+    except signing.BadSignature as exc:
+        raise exceptions.AuthenticationFailed('Invalid token') from exc
 
     user_ulid = payload.get('user_ulid')
     if not user_ulid:

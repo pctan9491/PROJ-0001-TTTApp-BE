@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from django.db import IntegrityError, transaction
 from tasks.models import Task, SubTask
 from accounts.models import Users
-from datetime import datetime
+from django.utils import timezone
 
 class TaskCreationError(Exception):
     pass
@@ -34,7 +34,7 @@ def create_task(
                 user_ulid=user_ulid,
                 user_id=user_id,
                 eisenhower_matrix_uuid=eisenhower_matrix_uuid,
-                created_at=datetime.now(),
+                created_at=timezone.now(),
             )
 
             return task

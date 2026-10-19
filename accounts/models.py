@@ -19,7 +19,7 @@ class Users(models.Model):
     last_name = models.CharField(max_length=70)
     gender = models.CharField(max_length=2)
     birth_date = models.DateField()
-    created_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     @property
     def is_authenticated(self) -> bool:
@@ -56,7 +56,7 @@ class LoginCredential(models.Model):
     )
     enable_flag = models.BooleanField(default=True)
     biometric_info = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'login_credential'

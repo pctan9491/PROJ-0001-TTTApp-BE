@@ -34,7 +34,7 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         related_name='task',
     )
-    created_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = 'task'
@@ -55,7 +55,7 @@ class SubTask(models.Model):
         on_delete=models.CASCADE,
         related_name='sub_task',
     )
-    created_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'sub_task'
