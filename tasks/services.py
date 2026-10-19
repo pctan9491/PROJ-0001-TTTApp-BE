@@ -31,7 +31,7 @@ def create_task(
                 task_status=task_status,
                 priority_level=priority_level,
                 schedule=schedule,
-                user_ulid=user.id,
+                user_ulid=user,
                 user_id=user.user_id,
                 eisenhower_matrix_uuid=EisenhowerMatrix.objects.get( eisenhower_matrix_id=eisenhower_matrix_id),
                 created_at=timezone.now(),

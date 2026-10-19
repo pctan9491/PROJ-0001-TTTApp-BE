@@ -30,7 +30,7 @@ def _task_payload(task):
         'schedule': task.schedule.isoformat(),
         'user_ulid': str(task.user_ulid),
         'user_id': task.user_id,
-        'eisenhower_matrix_uuid': task.eisenhower_matrix_uuid,
+        'eisenhower_matrix_uuid': str(task.eisenhower_matrix_uuid),
         'created_at': task.created_at.isoformat(),
     }
 
@@ -54,7 +54,6 @@ class CreateTaskView(APIView):
             return Response({'detail':str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {
-                'access_token': request.user.access_token,
                 'task': _task_payload(task),
                 'user': _user_payload(request.user)
             },
@@ -77,10 +76,9 @@ class ViewTaskView(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            task = get_task(**serializer.validated_data)
+            task = get_task(user=request.user, **serializer.validated_data)
             return Response(
                 {
-                    'access_token': request.user.access_token,
                     'task': _task_payload(task),
                     'user': _user_payload(request.user)
                 },
