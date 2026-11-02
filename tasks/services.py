@@ -64,7 +64,7 @@ def get_task (
                 tasks = tasks.filter(priority_level=filters["priority_level"])
             if filters.get("schedule"):
                 tasks = tasks.filter(schedule=filters["schedule"])
-            if filters.get("eisenhower_matrix_uuid"):
+            if filters.get("eisenhower_matrix_id"):
                 tasks = tasks.filter(eisenhower_matrix_uuid__eisenhower_matrix_id=filters["eisenhower_matrix_id"])
 
             #3 Return tasks sorted by created_at with filtered condition(s) (if any)
