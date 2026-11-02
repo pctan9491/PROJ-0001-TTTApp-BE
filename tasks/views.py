@@ -28,7 +28,7 @@ def _task_payload(task):
         'task_status': task.task_status,
         'priority_level': task.priority_level,
         'schedule': task.schedule.isoformat(),
-        'user_ulid': str(task.user_ulid),
+        'user_ulid': str(task.user_ulid_id),
         'user_id': task.user_id,
         'eisenhower_matrix_uuid': str(task.eisenhower_matrix_uuid_id),
         'created_at': task.created_at.isoformat(),
@@ -43,7 +43,7 @@ def _sub_task_payload(sub_task):
         'sub_task_status': sub_task.sub_task_status,
         'sub_task_schedule': sub_task.sub_task_schedule.isoformat(),
         'sub_task_priority': sub_task.sub_task_priority,
-        'task_ulid': str(sub_task.task_ulid),
+        'task_ulid': str(sub_task.task_ulid_id),
         'created_at': sub_task.created_at.isoformat(),
     }
 
@@ -121,6 +121,8 @@ class CreateSubTaskView(APIView):
 
         try:
             sub_task = create_sub_task(user=request.user, **serializer.validated_data)
+        except TaskNotFoundError as exc:
+            return Response({'detail': str(exc)},status=status.HTTP_404_NOT_FOUND)
         except TaskCreationError as exc:
             return Response({'detail':str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
@@ -147,7 +149,7 @@ class ViewSubTaskView(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            sub_tasks = get_sub_task(task_id=serializer.validated_data["task_id"], user=request.user, 
+            parent_task, sub_tasks = get_sub_task(task_id=serializer.validated_data["task_id"], user=request.user, 
             filters=serializer.validated_data)
 
             #Convert each SubTask into a Dictionary
@@ -155,7 +157,7 @@ class ViewSubTaskView(APIView):
             return Response(
                 {
                     'sub_task': sub_task_payload,
-                    'task': _task_payload(sub_tasks[0].task_ulid),
+                    'task': _task_payload(parent_task),
                     'user': _user_payload(request.user)
                 },
                 status=status.HTTP_200_OK

@@ -38,6 +38,8 @@ def create_task(
             )
 
             return task
+    except EisenhowerMatrix.DoesNotExist as exc:
+        raise TaskCreationError("Eisenhower Matrix not found") from exc
     except IntegrityError as exc:
         raise TaskCreationError('Task Creation Failed') from exc
 
@@ -49,7 +51,7 @@ def get_task (
     try:
         with transaction.atomic():
             #1 Get all tasks from login user
-            tasks = Task.objects.filter(user_ulid=user, **filters)
+            tasks = Task.objects.filter(user_ulid=user)
 
             #2 Filter by any field
             if filters.get("task_id"):
@@ -63,7 +65,7 @@ def get_task (
             if filters.get("schedule"):
                 tasks = tasks.filter(schedule=filters["schedule"])
             if filters.get("eisenhower_matrix_uuid"):
-                tasks = tasks.filter(eisenhower_matrix_uuid=filters["eisenhower_matrix_uuid"])
+                tasks = tasks.filter(eisenhower_matrix_uuid__eisenhower_matrix_id=filters["eisenhower_matrix_id"])
 
             #3 Return tasks sorted by created_at with filtered condition(s) (if any)
             return tasks.order_by('created_at')
@@ -95,6 +97,8 @@ def create_sub_task(
                 created_at=timezone.now(),
             )
             return sub_task
+    except Task.DoesNotExist as exc:
+        raise TaskNotFoundError("Parent task not found") from exc
     except IntegrityError as exc:
         raise TaskCreationError('Sub Task Creation Failed') from exc
 
@@ -107,7 +111,11 @@ def get_sub_task(
     try:
         with transaction.atomic():
             #1 Get all sub tasks from login user and main task_id
-            parent_task = Task.objects.get(task_id=task_id, user_ulid=user)
+            try:
+                parent_task = Task.objects.get(task_id=task_id, user_ulid=user)
+            except Task.DoesNotExist:
+                raise TaskNotFoundError('Task not found')
+            
             sub_tasks = SubTask.objects.filter(task_ulid=parent_task)
 
             #2 Filter by any field
@@ -123,7 +131,9 @@ def get_sub_task(
                 sub_tasks = sub_tasks.filter(sub_task_priority=filters["sub_task_priority"])
             
             #3 Return sub tasks sorted by created_at
-            return sub_tasks.order_by('created_at')
+            return parent_task, sub_tasks.order_by('created_at')
+    except Task.DoesNotExist as exc:
+        raise TaskNotFoundError("Parent task not found") from exc
     except SubTask.DoesNotExist:
         raise TaskNotFoundError('Sub Task not found')
 
