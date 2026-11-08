@@ -10,6 +10,15 @@ class TaskCreationError(Exception):
 class TaskNotFoundError(Exception):
     pass
 
+class TaskUpdateError(Exception):
+    pass
+
+class SubTaskNotFoundError(Exception):
+    pass
+
+class SubTaskUpdateError(Exception):
+    pass
+
 def create_task(
     *,
     user: Users,
@@ -137,5 +146,63 @@ def get_sub_task(
     except SubTask.DoesNotExist:
         raise TaskNotFoundError('Sub Task not found')
 
+def update_task(
+    *,
+    user: Users,
+    task_id: str,
+    task_title: str,
+    task_detail: str,
+    task_status: str,
+    priority_level: str,
+    schedule,
+    eisenhower_matrix_id: str,
+) -> Task:
+    try:
+        with transaction.atomic():
+            task = Task.objects.get(task_id=task_id, user_ulid=user)
+            task.task_title = task_title
+            task.task_detail = task_detail
+            task.task_status = task_status
+            task.priority_level = priority_level
+            task.schedule = schedule
+            task.eisenhower_matrix_uuid = EisenhowerMatrix.objects.get(eisenhower_matrix_id=eisenhower_matrix_id)
+            task.save()
+            return task
+    except Task.DoesNotExist as exc:
+        raise TaskUpdateError("Task not found") from exc
+    except IntegrityError as exc:
+        raise TaskUpdateError('Task Update Failed') from exc
+
+def update_sub_task(
+    *,
+    user: Users,
+    sub_task_id: str,
+    sub_task_title: str,
+    sub_task_description: str,
+    sub_task_status: str,
+    sub_task_schedule,
+    sub_task_priority: str,
+    task_id: str,
+) -> SubTask:
+    try:
+        with transaction.atomic():
+            try:
+                parent_task = Task.objects.get(task_id=task_id, user_ulid=user)
+            except Task.DoesNotExist:
+                raise TaskNotFoundError("Parent task not found")
+            try:
+                sub_task = SubTask.objects.get(sub_task_id=sub_task_id, task_ulid=parent_task)
+            except SubTask.DoesNotExist as exc:
+                raise TaskNotFoundError("Sub task not found in parent task") from exc
+            sub_task.sub_task_title = sub_task_title
+            sub_task.sub_task_description = sub_task_description
+            sub_task.sub_task_status = sub_task_status
+            sub_task.sub_task_schedule = sub_task_schedule
+            sub_task.sub_task_priority = sub_task_priority
+            sub_task.task_ulid = parent_task
+            sub_task.save()
+            return sub_task
+    except IntegrityError as exc:
+        raise TaskUpdateError('Sub Task Update Failed') from exc
 
     

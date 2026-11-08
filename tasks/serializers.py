@@ -17,6 +17,15 @@ class ViewTaskSerializer(serializers.Serializer):
     priority_level = serializers.CharField(max_length=10, required=False)
     eisenhower_matrix_id = serializers.CharField(max_length=10, required=False)
 
+class EditTaskSerializer(serializers.Serializer):
+    task_id = serializers.CharField(max_length=10)
+    task_title = serializers.CharField(max_length=70, required=False)
+    task_detail = serializers.CharField(max_length=500, required=False)
+    task_status = serializers.CharField(max_length=10, required=False)
+    priority_level = serializers.CharField(max_length=10, required=False)
+    schedule = serializers.DateField(required=False)
+    eisenhower_matrix_id = serializers.CharField(max_length=10, required=False)
+
 class CreateSubTaskSerializer(serializers.Serializer):
     sub_task_id = serializers.CharField(max_length=10)
     sub_task_title = serializers.CharField(max_length=70)
@@ -32,3 +41,12 @@ class ViewSubTaskSerializer(serializers.Serializer):
     sub_task_status = serializers.CharField(max_length=10, required=False)
     sub_task_schedule = serializers.DateField(required=False)
     sub_task_priority = serializers.CharField(max_length=10, required=False)
+
+class EditSubTaskSerializer(serializers.Serializer):
+    sub_task_id = serializers.CharField(max_length=10)
+    sub_task_title = serializers.CharField(max_length=70, required=False)
+    sub_task_description = serializers.CharField(max_length=500, required=False)
+    sub_task_status = serializers.CharField(max_length=10, required=False)
+    sub_task_schedule = serializers.DateField(required=False)
+    sub_task_priority = serializers.CharField(max_length=10, required=False)
+    task_id = serializers.CharField(max_length=10)
