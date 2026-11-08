@@ -189,11 +189,11 @@ def update_sub_task(
             try:
                 parent_task = Task.objects.get(task_id=task_id, user_ulid=user)
             except Task.DoesNotExist:
-                raise TaskNotFoundError("Parent task not found")
+                raise SubTaskUpdateError("Parent task not found")
             try:
                 sub_task = SubTask.objects.get(sub_task_id=sub_task_id, task_ulid=parent_task)
             except SubTask.DoesNotExist as exc:
-                raise TaskNotFoundError("Sub task not found in parent task") from exc
+                raise SubTaskUpdateError("Sub task not found in parent task") from exc
             sub_task.sub_task_title = sub_task_title
             sub_task.sub_task_description = sub_task_description
             sub_task.sub_task_status = sub_task_status

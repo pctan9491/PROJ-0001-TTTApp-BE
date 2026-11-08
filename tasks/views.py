@@ -7,7 +7,7 @@ from drf_spectacular.types import OpenApiTypes
 
 from accounts.models import Users
 from tasks.serializers import CreateTaskSerializer, ViewTaskSerializer, CreateSubTaskSerializer, ViewSubTaskSerializer, ViewSubTaskSerializer, EditTaskSerializer, EditSubTaskSerializer
-from tasks.services import TaskCreationError, TaskNotFoundError, create_task, get_task, create_sub_task, get_sub_task, update_task, update_sub_task
+from tasks.services import TaskCreationError, TaskNotFoundError, create_task, get_task, create_sub_task, get_sub_task, update_task, update_sub_task, SubTaskUpdateError, SubTaskNotFoundError, TaskUpdateError
 
 def _user_payload(user):
     return {
@@ -181,8 +181,8 @@ class EditTaskView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             task = update_task(user=request.user, **serializer.validated_data)
-        except TaskNotFoundError as exc:
-            return Response({'detail': str(exc)}, status=status.HTTP_404_NOT_FOUND)
+        except TaskUpdateError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {
                 'task': _task_payload(task),
@@ -207,8 +207,8 @@ class EditSubTaskView(APIView):
 
         try:
             sub_task = update_sub_task(user=request.user, **serializer.validated_data)
-        except TaskNotFoundError as exc:
-            return Response({'detail': str(exc)}, status=status.HTTP_404_NOT_FOUND)
+        except SubTaskUpdateError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {
                 'sub_task': _sub_task_payload(sub_task),
