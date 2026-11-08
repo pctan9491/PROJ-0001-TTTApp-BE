@@ -204,5 +204,3 @@ def update_sub_task(
             return sub_task
     except IntegrityError as exc:
         raise TaskUpdateError('Sub Task Update Failed') from exc
-
-    
